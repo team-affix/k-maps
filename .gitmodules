@@ -1,0 +1,3 @@
+[submodule "factor-dag"]
+	path = factor-dag
+	url = https://github.com/team-affix/factor-dag.git
