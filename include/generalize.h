@@ -5,7 +5,7 @@
 #include <set>
 #include <vector>
 
-#include "../factor-dag/include/dag_logic.h"
+#include "../factor-dag/include/dag.h"
 
 namespace karnaugh
 {
@@ -125,9 +125,9 @@ namespace karnaugh
         ///     nonzero, but dissatisfying
         ///     coverage is zero.
         if (a_ones.size() == 0)
-            return ZERO;
+            return dag::ZERO;
         if (a_zeroes.size() == 0)
-            return ONE;
+            return dag::ONE;
 
         std::set<const input*> l_left_zeroes;
         std::set<const input*> l_right_zeroes;

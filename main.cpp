@@ -161,6 +161,10 @@ void test_small_generalization_0(
 {
     constexpr bool ENABLE_DEBUG_LOGS = false;
     
+    std::set<node> l_nodes;
+
+    global_node_sink::bind(&l_nodes);
+    
     std::set<input> l_zeroes =
     {
         { 0, 1, 1 },
@@ -175,205 +179,221 @@ void test_small_generalization_0(
         { 0, 0, 1 }
     };
     
+    /// Should create k-map equivalent to: a + b'c.
     const dag::node* l_dag = generalize(
         0,
         pointers(l_zeroes),
         pointers(l_ones)
     );
 
-    assert(l_tree({0, 0, 0}) == false);
-    assert(l_tree({0, 0, 1}) == true);
-    assert(l_tree({0, 1, 0}) == false);
-    assert(l_tree({0, 1, 1}) == false);
-    assert(l_tree({1, 0, 0}) == true);
-    assert(l_tree({1, 0, 1}) == true);
-    assert(l_tree({1, 1, 0}) == true);
-    assert(l_tree({1, 1, 1}) == true);
+    assert(evaluate(l_dag, {0, 0, 0}) == false);
+    assert(evaluate(l_dag, {0, 0, 1}) == true);
+    assert(evaluate(l_dag, {0, 1, 0}) == false);
+    assert(evaluate(l_dag, {0, 1, 1}) == false); // Unknown
+    assert(evaluate(l_dag, {1, 0, 0}) == true); // Unknown
+    assert(evaluate(l_dag, {1, 0, 1}) == true);
+    assert(evaluate(l_dag, {1, 1, 0}) == true);
+    assert(evaluate(l_dag, {1, 1, 1}) == true);
 
-    LOG(l_tree << std::endl);
+    LOG(l_dag << std::endl);
 
     std::stringstream l_ss;
 
-    l_ss << l_tree;
+    l_ss << l_dag;
 
-    assert(l_ss.str() == "1+2(5)");
+    assert(l_ss.str() == "([0'][1'][2]+[0])");
     
 }
 
-// void test_small_generalization_1(
+void test_small_generalization_1(
 
-// )
-// {
-//     constexpr bool ENABLE_DEBUG_LOGS = false;
+)
+{
+    constexpr bool ENABLE_DEBUG_LOGS = false;
     
-//     std::set<input> l_zeroes =
-//     {
-//         {0, 1, 0, 0},
-//         {0, 0, 0, 1},
-//         {0, 1, 0, 1},
-//         {0, 1, 1, 1},
-//         {0, 0, 1, 0},
-//         {0, 1, 1, 0}
-//     };
+    std::set<node> l_nodes;
 
-//     std::set<input> l_ones =
-//     {
-//         {1, 0, 0, 0},
-//         {1, 1, 0, 1},
-//         {1, 0, 0, 1},
-//         {1, 0, 1, 1},
-//         {1, 1, 1, 0},
-//         {1, 0, 1, 0}
-//     };
-
-//     tree l_tree = generalize(
-//         l_zeroes,
-//         l_ones
-//     );
-
-//     assert(l_tree({0, 0, 0, 0}) == false);
-//     assert(l_tree({0, 0, 0, 1}) == false);
-//     assert(l_tree({0, 0, 1, 0}) == false);
-//     assert(l_tree({0, 0, 1, 1}) == false);
-//     assert(l_tree({0, 1, 0, 0}) == false);
-//     assert(l_tree({0, 1, 0, 1}) == false);
-//     assert(l_tree({0, 1, 1, 0}) == false);
-//     assert(l_tree({0, 1, 1, 1}) == false);
-
-//     assert(l_tree({1, 0, 0, 0}) == true);
-//     assert(l_tree({1, 0, 0, 1}) == true);
-//     assert(l_tree({1, 0, 1, 0}) == true);
-//     assert(l_tree({1, 0, 1, 1}) == true);
-//     assert(l_tree({1, 1, 0, 0}) == true);
-//     assert(l_tree({1, 1, 0, 1}) == true);
-//     assert(l_tree({1, 1, 1, 0}) == true);
-//     assert(l_tree({1, 1, 1, 1}) == true);
+    global_node_sink::bind(&l_nodes);
     
-//     LOG(l_tree << std::endl);
+    std::set<input> l_zeroes =
+    {
+        {0, 1, 0, 0},
+        {0, 0, 0, 1},
+        {0, 1, 0, 1},
+        {0, 1, 1, 1},
+        {0, 0, 1, 0},
+        {0, 1, 1, 0}
+    };
 
-//     std::stringstream l_ss;
+    std::set<input> l_ones =
+    {
+        {1, 0, 0, 0},
+        {1, 1, 0, 1},
+        {1, 0, 0, 1},
+        {1, 0, 1, 1},
+        {1, 1, 1, 0},
+        {1, 0, 1, 0}
+    };
 
-//     l_ss << l_tree;
+    const node* l_dag = generalize(
+        0,
+        pointers(l_zeroes),
+        pointers(l_ones)
+    );
 
-//     assert(l_ss.str() == "1");
+    assert(evaluate(l_dag, {0, 0, 0, 0}) == false);
+    assert(evaluate(l_dag, {0, 0, 0, 1}) == false);
+    assert(evaluate(l_dag, {0, 0, 1, 0}) == false);
+    assert(evaluate(l_dag, {0, 0, 1, 1}) == false);
+    assert(evaluate(l_dag, {0, 1, 0, 0}) == false);
+    assert(evaluate(l_dag, {0, 1, 0, 1}) == false);
+    assert(evaluate(l_dag, {0, 1, 1, 0}) == false);
+    assert(evaluate(l_dag, {0, 1, 1, 1}) == false);
+
+    assert(evaluate(l_dag, {1, 0, 0, 0}) == true);
+    assert(evaluate(l_dag, {1, 0, 0, 1}) == true);
+    assert(evaluate(l_dag, {1, 0, 1, 0}) == true);
+    assert(evaluate(l_dag, {1, 0, 1, 1}) == true);
+    assert(evaluate(l_dag, {1, 1, 0, 0}) == true);
+    assert(evaluate(l_dag, {1, 1, 0, 1}) == true);
+    assert(evaluate(l_dag, {1, 1, 1, 0}) == true);
+    assert(evaluate(l_dag, {1, 1, 1, 1}) == true);
     
-// }
+    LOG(l_dag << std::endl);
 
-// void test_small_generalization_2(
+    std::stringstream l_ss;
 
-// )
-// {
-//     constexpr bool ENABLE_DEBUG_LOGS = false;
+    l_ss << l_dag;
+
+    assert(l_ss.str() == "[0]");
     
-//     std::set<input> l_zeroes =
-//     {
-//         {0, 0, 0, 0},
-//         {0, 0, 0, 1},
-//         {0, 1, 0, 1},
-//         {0, 1, 1, 1},
-//         {0, 1, 1, 0},
-//         {1, 1, 1, 1},
-//     };
+}
 
-//     std::set<input> l_ones =
-//     {
-//         {0, 0, 1, 1},
-//         {0, 1, 0, 0},
-//         {1, 1, 0, 1},
-//         {1, 1, 1, 0},
-//         {1, 0, 0, 1},
-//         {1, 0, 1, 1},
-//         {1, 0, 1, 0},
-//     };
+void test_small_generalization_2(
 
-//     tree l_tree = generalize(
-//         l_zeroes,
-//         l_ones
-//     );
+)
+{
+    constexpr bool ENABLE_DEBUG_LOGS = false;
 
-//     assert(l_tree({0, 0, 0, 0}) == false);
-//     assert(l_tree({0, 0, 0, 1}) == false);
-//     assert(l_tree({0, 0, 1, 0}) == true); // Unknown
-//     assert(l_tree({0, 0, 1, 1}) == true);
-//     assert(l_tree({0, 1, 0, 0}) == true);
-//     assert(l_tree({0, 1, 0, 1}) == false);
-//     assert(l_tree({0, 1, 1, 0}) == false);
-//     assert(l_tree({0, 1, 1, 1}) == false);
+    std::set<node> l_nodes;
 
-//     assert(l_tree({1, 0, 0, 0}) == true); // Unknown
-//     assert(l_tree({1, 0, 0, 1}) == true);
-//     assert(l_tree({1, 0, 1, 0}) == true);
-//     assert(l_tree({1, 0, 1, 1}) == true);
-//     assert(l_tree({1, 1, 0, 0}) == true); // Unknown
-//     assert(l_tree({1, 1, 0, 1}) == true);
-//     assert(l_tree({1, 1, 1, 0}) == true);
-//     assert(l_tree({1, 1, 1, 1}) == false);
+    global_node_sink::bind(&l_nodes);
     
-//     LOG(l_tree << std::endl);
+    std::set<input> l_zeroes =
+    {
+        {0, 0, 0, 0},
+        {0, 0, 0, 1},
+        {0, 1, 0, 1},
+        {0, 1, 1, 1},
+        {0, 1, 1, 0},
+        {1, 1, 1, 1},
+    };
 
-//     std::stringstream l_ss;
+    std::set<input> l_ones =
+    {
+        {0, 0, 1, 1},
+        {0, 1, 0, 0},
+        {1, 1, 0, 1},
+        {1, 1, 1, 0},
+        {1, 0, 0, 1},
+        {1, 0, 1, 1},
+        {1, 0, 1, 0},
+    };
 
-//     l_ss << l_tree;
+    const node* l_dag = generalize(
+        0,
+        pointers(l_zeroes),
+        pointers(l_ones)
+    );
 
-//     assert(l_ss.str() == "1(2+4+6)+2(5)+6(3(4))");
+    assert(evaluate(l_dag, {0, 0, 0, 0}) == false);
+    assert(evaluate(l_dag, {0, 0, 0, 1}) == false);
+    assert(evaluate(l_dag, {0, 0, 1, 0}) == true); // Unknown
+    assert(evaluate(l_dag, {0, 0, 1, 1}) == true);
+    assert(evaluate(l_dag, {0, 1, 0, 0}) == true);
+    assert(evaluate(l_dag, {0, 1, 0, 1}) == false);
+    assert(evaluate(l_dag, {0, 1, 1, 0}) == false);
+    assert(evaluate(l_dag, {0, 1, 1, 1}) == false);
+
+    assert(evaluate(l_dag, {1, 0, 0, 0}) == true); // Unknown
+    assert(evaluate(l_dag, {1, 0, 0, 1}) == true);
+    assert(evaluate(l_dag, {1, 0, 1, 0}) == true);
+    assert(evaluate(l_dag, {1, 0, 1, 1}) == true);
+    assert(evaluate(l_dag, {1, 1, 0, 0}) == true); // Unknown
+    assert(evaluate(l_dag, {1, 1, 0, 1}) == true);
+    assert(evaluate(l_dag, {1, 1, 1, 0}) == true);
+    assert(evaluate(l_dag, {1, 1, 1, 1}) == false);
     
-// }
+    LOG(l_dag << std::endl);
 
-// void test_small_generalization_3(
+    std::stringstream l_ss;
 
-// )
-// {
-//     constexpr bool ENABLE_DEBUG_LOGS = false;
+    l_ss << l_dag;
 
-//     std::set<input> l_zeroes =
-//     {
-//         {0, 1, 1, 0},
-//         {1, 1, 0, 0},
-//         {1, 0, 0, 0},
-//         {1, 0, 0, 1},
-//         {1, 0, 1, 0},
-//     };
-
-//     std::set<input> l_ones =
-//     {
-//         {0, 0, 0, 0},
-//         {0, 1, 0, 0},
-//         {1, 1, 1, 1},
-//         {1, 0, 1, 1},
-//     };
-
-//     tree l_tree = generalize(
-//         l_zeroes,
-//         l_ones
-//     );
-
-//     assert(l_tree({0, 0, 0, 0}) == true);
-//     assert(l_tree({0, 0, 0, 1}) == true); // Unknown
-//     assert(l_tree({0, 0, 1, 0}) == true); // Unknown
-//     assert(l_tree({0, 0, 1, 1}) == true); // Unknown
-//     assert(l_tree({0, 1, 0, 0}) == true);
-//     assert(l_tree({0, 1, 0, 1}) == true); // Unknown
-//     assert(l_tree({0, 1, 1, 0}) == false);
-//     assert(l_tree({0, 1, 1, 1}) == true); // Unknown
-
-//     assert(l_tree({1, 0, 0, 0}) == false);
-//     assert(l_tree({1, 0, 0, 1}) == false);
-//     assert(l_tree({1, 0, 1, 0}) == false);
-//     assert(l_tree({1, 0, 1, 1}) == true);
-//     assert(l_tree({1, 1, 0, 0}) == false);
-//     assert(l_tree({1, 1, 0, 1}) == true);  // Unknown
-//     assert(l_tree({1, 1, 1, 0}) == false); // Unknown
-//     assert(l_tree({1, 1, 1, 1}) == true);
-
-//     LOG(l_tree << std::endl);
-
-//     std::stringstream l_ss;
-
-//     l_ss << l_tree;
-
-//     assert(l_ss.str() == "0(2+4)+7(3+5)");
+    assert(l_ss.str() == "([0']([1'][2]+[1][2'][3'])+[0]([1']+[1]([2']+[2][3'])))");
     
-// }
+}
+
+void test_small_generalization_3(
+
+)
+{
+    constexpr bool ENABLE_DEBUG_LOGS = true;
+
+    std::set<node> l_nodes;
+
+    global_node_sink::bind(&l_nodes);
+
+    std::set<input> l_zeroes =
+    {
+        {0, 1, 1, 0},
+        {1, 1, 0, 0},
+        {1, 0, 0, 0},
+        {1, 0, 0, 1},
+        {1, 0, 1, 0},
+    };
+
+    std::set<input> l_ones =
+    {
+        {0, 0, 0, 0},
+        {0, 1, 0, 0},
+        {1, 1, 1, 1},
+        {1, 0, 1, 1},
+    };
+
+    const node* l_dag = generalize(
+        0,
+        pointers(l_zeroes),
+        pointers(l_ones)
+    );
+
+    LOG(l_dag << std::endl);
+
+    assert(evaluate(l_dag, {0, 0, 0, 0}) == true);
+    assert(evaluate(l_dag, {0, 0, 0, 1}) == true); // Unknown
+    assert(evaluate(l_dag, {0, 0, 1, 0}) == true); // Unknown
+    assert(evaluate(l_dag, {0, 0, 1, 1}) == true); // Unknown
+    assert(evaluate(l_dag, {0, 1, 0, 0}) == true);
+    assert(evaluate(l_dag, {0, 1, 0, 1}) == true); // Unknown
+    assert(evaluate(l_dag, {0, 1, 1, 0}) == false);
+    assert(evaluate(l_dag, {0, 1, 1, 1}) == true); // Unknown
+
+    assert(evaluate(l_dag, {1, 0, 0, 0}) == false);
+    assert(evaluate(l_dag, {1, 0, 0, 1}) == false);
+    assert(evaluate(l_dag, {1, 0, 1, 0}) == false);
+    assert(evaluate(l_dag, {1, 0, 1, 1}) == true);
+    assert(evaluate(l_dag, {1, 1, 0, 0}) == false);
+    assert(evaluate(l_dag, {1, 1, 0, 1}) == true);  // Unknown
+    assert(evaluate(l_dag, {1, 1, 1, 0}) == false); // Unknown
+    assert(evaluate(l_dag, {1, 1, 1, 1}) == true);
+
+    std::stringstream l_ss;
+
+    l_ss << l_dag;
+
+    assert(l_ss.str() == "0(2+4)+7(3+5)");
+    
+}
 
 void unit_test_main(
 
@@ -386,6 +406,9 @@ void unit_test_main(
     TEST(test_utils_cover);
     TEST(test_utils_partition);
     TEST(test_small_generalization_0);
+    TEST(test_small_generalization_1);
+    TEST(test_small_generalization_2);
+    TEST(test_small_generalization_3);
     
 }
 
