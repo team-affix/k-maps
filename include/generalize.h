@@ -184,8 +184,6 @@ namespace karnaugh
         /// 4. Realize ALL subtrees.
         /////////////////////////////////////////////////////
 
-        #pragma region REALIZE SUBTREES
-
         const dag::node* l_result = dag::ZERO;
 
         for (const auto& [l_selected_literal, l_one_block] : l_one_partition)
@@ -218,8 +216,6 @@ namespace karnaugh
                 );
 
         }
-
-        #pragma endregion
 
         return l_result;
 
