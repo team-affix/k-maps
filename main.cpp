@@ -425,6 +425,55 @@ void test_generalize_exnor(
     
 }
 
+void test_generalize_exor(
+
+)
+{
+    constexpr bool ENABLE_DEBUG_LOGS = false;
+    
+    std::set<node> l_nodes;
+
+    global_node_sink::bind(&l_nodes);
+
+    /// Modelling c exnor d.
+    
+
+    std::set<input> l_zeroes =
+    {
+        { 0, 0, 0, 0 },
+        { 0, 0, 1, 1 },
+        { 0, 1, 0, 0 },
+        { 0, 1, 1, 1 },
+        { 1, 0, 0, 0 },
+        { 1, 0, 1, 1 },
+        { 1, 1, 0, 0 },
+        { 1, 1, 1, 1 },
+    };
+
+    std::set<input> l_ones =
+    {
+        { 0, 0, 0, 1 },
+        { 0, 1, 0, 1 },
+        { 0, 0, 1, 0 },
+        { 0, 1, 1, 0 },
+        { 1, 0, 0, 1 },
+        { 1, 0, 1, 0 },
+        { 1, 1, 0, 1 },
+        { 1, 1, 1, 0 },
+    };
+
+    const node* l_model = generalize(l_zeroes, l_ones);
+    
+    LOG(l_model << std::endl);
+
+    std::stringstream l_ss;
+
+    l_ss << l_model;
+
+    assert(l_ss.str() == "([2'][3]+[2][3'])");
+    
+}
+
 void unit_test_main(
 
 )
@@ -439,6 +488,7 @@ void unit_test_main(
     TEST(test_small_generalization_2);
     TEST(test_small_generalization_3);
     TEST(test_generalize_exnor);
+    TEST(test_generalize_exor);
     
 }
 
