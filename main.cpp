@@ -185,7 +185,7 @@ void test_small_generalization_0(
 
     l_ss << l_dag;
 
-    assert(l_ss.str() == "([0'][1'][2]+[0])");
+    assert(l_ss.str() == "([0]'[1]'[2]+[0])");
     
 }
 
@@ -312,7 +312,7 @@ void test_small_generalization_2(
 
     l_ss << l_dag;
 
-    assert(l_ss.str() == "([0']([1'][2]+[1][2'][3'])+[0]([1']+[1]([2']+[2][3'])))");
+    assert(l_ss.str() == "([0]'([1]'[2]+[1][2]'[3]')+[0]([1]'+[1]([2]'+[2][3]')))");
     
 }
 
@@ -372,7 +372,7 @@ void test_small_generalization_3(
 
     l_ss << l_dag;
 
-    assert(l_ss.str() == "([0']([1']+[1]([2']+[2][3]))+[0]([1'][2][3]+[1][3]))");
+    assert(l_ss.str() == "([0]'([1]'+[1]([2]'+[2][3]))+[0]([1]'[2][3]+[1][3]))");
     
 }
 
@@ -421,7 +421,7 @@ void test_generalize_exnor(
 
     l_ss << l_model;
 
-    assert(l_ss.str() == "([2'][3']+[2][3])");
+    assert(l_ss.str() == "([2]'[3]'+[2][3])");
     
 }
 
@@ -470,7 +470,7 @@ void test_generalize_exor(
 
     l_ss << l_model;
 
-    assert(l_ss.str() == "([2'][3]+[2][3'])");
+    assert(l_ss.str() == "([2]'[3]+[2][3]')");
     
 }
 
