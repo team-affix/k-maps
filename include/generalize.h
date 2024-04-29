@@ -15,22 +15,6 @@ namespace karnaugh
     ////////////////////////////////////////////
     #pragma region UTILITY FUNCTIONS
 
-    /// Constructs a set of pointers given
-    ///     a set of any type.
-    template<typename T>
-    inline std::set<const T*> pointers(
-        const std::set<T>& a_vals
-    )
-    {
-        std::set<const T*> l_result;
-        
-        for (const T& l_val : a_vals)
-            l_result.insert(&l_val);
-
-        return l_result;
-        
-    }
-
     /// Filters the inputted set by
     ///     the supplied predicate.
     template<typename T, typename FUNCTION>
@@ -114,7 +98,7 @@ namespace karnaugh
     using input = std::vector<bool>;
 
     inline const dag::node* generalize(
-        const uint32_t a_variable_index,
+        const std::set<const dag::node*>& a_remaining_literals,
         const std::set<const input*>& a_zeroes,
         const std::set<const input*>& a_ones
     )
@@ -129,42 +113,160 @@ namespace karnaugh
         if (a_zeroes.size() == 0)
             return dag::ONE;
 
-        std::set<const input*> l_left_zeroes;
-        std::set<const input*> l_right_zeroes;
+        /////////////////////////////////////////////////////
+        /// 1. Group each zero into subsets,
+        ///      defined by coverage by a literal.
+        /////////////////////////////////////////////////////
+        
+        std::map<const dag::node*, std::set<const input*>> l_zero_cover =
+            cover(
+                a_zeroes,
+                [&a_remaining_literals](
+                    const input* a_zero
+                )
+                {
+                    return karnaugh::filter(
+                        a_remaining_literals,
+                        [a_zero](
+                            const dag::node* a_literal
+                        )
+                        {
+                            return dag::evaluate(a_literal, *a_zero);
+                        }
+                    );
+                }
+            );
+        
+        //////////////////////////////////////////////////////
+        /// 2. Sort literals in ascending dissatisfying cov. size.
+        //////////////////////////////////////////////////////
+        
+        /// Key type is std::pair<size_t, literal> because we
+        ///     can populate size_t with dissatisfying cov size.
+        ///     This will ensure the set is sorted by minimum
+        ///     dissatisfying coverage.
+        std::set<std::pair<size_t, const dag::node*>> l_sorted_literals;
 
-        for (const input* l_input : a_zeroes)
+        for (const dag::node* l_literal : a_remaining_literals)
+            l_sorted_literals.emplace(l_zero_cover[l_literal].size(), l_literal);
+
+        //////////////////////////////////////////////////////
+        /// 3. Partition the ones based on the literal
+        ///     that has minimum dissatisfying coverage 
+        ///     that simultaneously covers it.
+        //////////////////////////////////////////////////////
+
+        std::map<const dag::node*, std::set<const input*>> l_one_partition =
+            partition(
+                a_ones,
+                [&l_sorted_literals](
+                    const input* a_input
+                )
+                {
+                    auto l_first_covering_literal =
+                        std::find_if(
+                            l_sorted_literals.begin(),
+                            l_sorted_literals.end(),
+                            [a_input](
+                                const auto& a_entry
+                            )
+                            {
+                                return dag::evaluate(a_entry.second, *a_input);
+                            }
+                        );
+
+                    return l_first_covering_literal->second;
+                    
+                }
+            );
+
+        /////////////////////////////////////////////////////
+        /// 4. Realize ALL subtrees.
+        /////////////////////////////////////////////////////
+
+        #pragma region REALIZE SUBTREES
+
+        const dag::node* l_result = dag::ZERO;
+
+        for (const auto& [l_selected_literal, l_one_block] : l_one_partition)
         {
-            if (l_input->at(a_variable_index) == false)
-                l_left_zeroes.insert(l_input);
-            else
-                l_right_zeroes.insert(l_input);
+            /// Filter all remaining literals based on
+            ///     literal that is being taken care of
+            ///     by this edge to the subtree.
+            std::set<const dag::node*> l_subtree_remaining_literals =
+                filter(
+                    a_remaining_literals,
+                    [l_selected_literal](
+                        const dag::node* a_literal
+                    )
+                    {
+                        return a_literal->depth() != l_selected_literal->depth();
+                    }
+                );
+
+            l_result = 
+                logic::disjoin(
+                    l_result,
+                    logic::conjoin(
+                        l_selected_literal,
+                        generalize(
+                            l_subtree_remaining_literals,
+                            l_zero_cover[l_selected_literal],
+                            l_one_block
+                        )
+                    )
+                );
+
         }
 
-        std::set<const input*> l_left_ones;
-        std::set<const input*> l_right_ones;
+        #pragma endregion
 
-        for (const input* l_input : a_ones)
+        return l_result;
+
+    }
+
+    inline const dag::node* generalize(
+        const std::set<input>& a_zeroes,
+        const std::set<input>& a_ones
+    )
+    {
+
+        /////////////////////////////////////////////////////
+        /// CONSTRUCT STARTING LITERALS
+        /////////////////////////////////////////////////////
+
+        const size_t l_num_vars = a_zeroes.begin()->size();
+
+        std::set<const dag::node*> l_literals;
+
+        for (uint32_t l_variable = 0; l_variable < l_num_vars; ++l_variable)
         {
-            if (l_input->at(a_variable_index) == false)
-                l_left_ones.insert(l_input);
-            else
-                l_right_ones.insert(l_input);
+            l_literals.insert(dag::literal(l_variable, false));
+            l_literals.insert(dag::literal(l_variable, true));
         }
 
-        return dag::global_node_sink::emplace(
-            a_variable_index,
-            generalize(
-                a_variable_index + 1,
-                l_left_zeroes,
-                l_left_ones
-            ),
-            generalize(
-                a_variable_index + 1,
-                l_right_zeroes,
-                l_right_ones
-            )
+        /////////////////////////////////////////////////////
+        /// CREATE INPUT POINTERS
+        /////////////////////////////////////////////////////
+
+        std::set<const input*> l_zero_pointers, l_one_pointers;
+
+        for (const input& l_input : a_zeroes)
+            l_zero_pointers.insert(&l_input);
+
+        for (const input& l_input : a_ones)
+            l_one_pointers.insert(&l_input);
+
+        /////////////////////////////////////////////////////
+        /// DONE PREPROCESSING, BEGIN GENERALIZATION
+        /////////////////////////////////////////////////////
+
+        return generalize(
+            l_literals,
+            l_zero_pointers,
+            l_one_pointers
         );
-
+        
     }
 
     #pragma endregion

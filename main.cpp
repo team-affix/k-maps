@@ -19,21 +19,6 @@ using namespace karnaugh;
 ////////////////////////////////////////////
 #pragma region UNIT TESTS
 
-void test_utils_pointers(
-
-)
-{
-    std::set<int> l_ints = {1, 2, 60, 4, 5};
-
-    std::set<const int*> l_pointers = pointers(l_ints);
-
-    assert(l_pointers.size() == l_ints.size());
-
-    for (const int* l_ptr : l_pointers)
-        assert(l_ints.contains(*l_ptr));
-    
-}
-
 void test_utils_filter(
 
 )
@@ -181,9 +166,8 @@ void test_small_generalization_0(
     
     /// Should create k-map equivalent to: a + b'c.
     const dag::node* l_dag = generalize(
-        0,
-        pointers(l_zeroes),
-        pointers(l_ones)
+        l_zeroes,
+        l_ones
     );
 
     assert(evaluate(l_dag, {0, 0, 0}) == false);
@@ -236,9 +220,8 @@ void test_small_generalization_1(
     };
 
     const node* l_dag = generalize(
-        0,
-        pointers(l_zeroes),
-        pointers(l_ones)
+        l_zeroes,
+        l_ones
     );
 
     assert(evaluate(l_dag, {0, 0, 0, 0}) == false);
@@ -301,9 +284,8 @@ void test_small_generalization_2(
     };
 
     const node* l_dag = generalize(
-        0,
-        pointers(l_zeroes),
-        pointers(l_ones)
+        l_zeroes,
+        l_ones
     );
 
     assert(evaluate(l_dag, {0, 0, 0, 0}) == false);
@@ -338,7 +320,7 @@ void test_small_generalization_3(
 
 )
 {
-    constexpr bool ENABLE_DEBUG_LOGS = true;
+    constexpr bool ENABLE_DEBUG_LOGS = false;
 
     std::set<node> l_nodes;
 
@@ -362,9 +344,8 @@ void test_small_generalization_3(
     };
 
     const node* l_dag = generalize(
-        0,
-        pointers(l_zeroes),
-        pointers(l_ones)
+        l_zeroes,
+        l_ones
     );
 
     LOG(l_dag << std::endl);
@@ -391,7 +372,7 @@ void test_small_generalization_3(
 
     l_ss << l_dag;
 
-    assert(l_ss.str() == "0(2+4)+7(3+5)");
+    assert(l_ss.str() == "([0']([1']+[1]([2']+[2][3]))+[0]([1'][2][3]+[1][3]))");
     
 }
 
@@ -401,7 +382,6 @@ void unit_test_main(
 {
     constexpr bool ENABLE_DEBUG_LOGS = true;
 
-    TEST(test_utils_pointers);
     TEST(test_utils_filter);
     TEST(test_utils_cover);
     TEST(test_utils_partition);
