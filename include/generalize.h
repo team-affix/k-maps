@@ -5,7 +5,7 @@
 #include <set>
 #include <vector>
 
-#include "../factor-dag/include/dag.h"
+#include "../factor-dag/include/factor.h"
 
 namespace karnaugh
 {
@@ -97,8 +97,8 @@ namespace karnaugh
 
     using input = std::vector<bool>;
 
-    inline const dag::node* generalize(
-        const std::set<const dag::node*>& a_remaining_literals,
+    inline const factor::node* generalize(
+        const std::set<const factor::node*>& a_remaining_literals,
         const std::set<const input*>& a_zeroes,
         const std::set<const input*>& a_ones
     )
@@ -109,16 +109,16 @@ namespace karnaugh
         ///     nonzero, but dissatisfying
         ///     coverage is zero.
         if (a_ones.size() == 0)
-            return dag::ZERO;
+            return factor::ZERO;
         if (a_zeroes.size() == 0)
-            return dag::ONE;
+            return factor::ONE;
 
         /////////////////////////////////////////////////////
         /// 1. Group each zero into subsets,
         ///      defined by coverage by a literal.
         /////////////////////////////////////////////////////
         
-        std::map<const dag::node*, std::set<const input*>> l_zero_cover =
+        std::map<const factor::node*, std::set<const input*>> l_zero_cover =
             cover(
                 a_zeroes,
                 [&a_remaining_literals](
@@ -128,10 +128,10 @@ namespace karnaugh
                     return karnaugh::filter(
                         a_remaining_literals,
                         [a_zero](
-                            const dag::node* a_literal
+                            const factor::node* a_literal
                         )
                         {
-                            return dag::evaluate(a_literal, *a_zero);
+                            return factor::evaluate(a_literal, *a_zero);
                         }
                     );
                 }
@@ -145,9 +145,9 @@ namespace karnaugh
         ///     can populate size_t with dissatisfying cov size.
         ///     This will ensure the set is sorted by minimum
         ///     dissatisfying coverage.
-        std::set<std::pair<size_t, const dag::node*>> l_sorted_literals;
+        std::set<std::pair<size_t, const factor::node*>> l_sorted_literals;
 
-        for (const dag::node* l_literal : a_remaining_literals)
+        for (const factor::node* l_literal : a_remaining_literals)
             l_sorted_literals.emplace(l_zero_cover[l_literal].size(), l_literal);
 
         //////////////////////////////////////////////////////
@@ -156,7 +156,7 @@ namespace karnaugh
         ///     that simultaneously covers it.
         //////////////////////////////////////////////////////
 
-        std::map<const dag::node*, std::set<const input*>> l_one_partition =
+        std::map<const factor::node*, std::set<const input*>> l_one_partition =
             partition(
                 a_ones,
                 [&l_sorted_literals](
@@ -171,7 +171,7 @@ namespace karnaugh
                                 const auto& a_entry
                             )
                             {
-                                return dag::evaluate(a_entry.second, *a_input);
+                                return factor::evaluate(a_entry.second, *a_input);
                             }
                         );
 
@@ -184,18 +184,18 @@ namespace karnaugh
         /// 4. Realize ALL subtrees.
         /////////////////////////////////////////////////////
 
-        const dag::node* l_result = dag::ZERO;
+        const factor::node* l_result = factor::ZERO;
 
         for (const auto& [l_selected_literal, l_one_block] : l_one_partition)
         {
             /// Filter all remaining literals based on
             ///     literal that is being taken care of
             ///     by this edge to the subtree.
-            std::set<const dag::node*> l_subtree_remaining_literals =
+            std::set<const factor::node*> l_subtree_remaining_literals =
                 filter(
                     a_remaining_literals,
                     [l_selected_literal](
-                        const dag::node* a_literal
+                        const factor::node* a_literal
                     )
                     {
                         return a_literal->depth() != l_selected_literal->depth();
@@ -221,7 +221,7 @@ namespace karnaugh
 
     }
 
-    inline const dag::node* generalize(
+    inline const factor::node* generalize(
         const std::set<input>& a_zeroes,
         const std::set<input>& a_ones
     )
@@ -233,12 +233,12 @@ namespace karnaugh
 
         const size_t l_num_vars = a_zeroes.begin()->size();
 
-        std::set<const dag::node*> l_literals;
+        std::set<const factor::node*> l_literals;
 
         for (uint32_t l_variable = 0; l_variable < l_num_vars; ++l_variable)
         {
-            l_literals.insert(dag::literal(l_variable, false));
-            l_literals.insert(dag::literal(l_variable, true));
+            l_literals.insert(factor::literal(l_variable, false));
+            l_literals.insert(factor::literal(l_variable, true));
         }
 
         /////////////////////////////////////////////////////

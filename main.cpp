@@ -10,7 +10,7 @@
     void_fn(); \
     LOG("TEST COMPLETED: " << #void_fn << std::endl);
 
-using namespace dag;
+using namespace factor;
 using namespace logic;
 using namespace karnaugh;
 
@@ -146,7 +146,7 @@ void test_small_generalization_0(
 {
     constexpr bool ENABLE_DEBUG_LOGS = false;
     
-    std::set<node> l_nodes;
+    dag l_nodes;
 
     global_node_sink::bind(&l_nodes);
     
@@ -165,7 +165,7 @@ void test_small_generalization_0(
     };
     
     /// Should create k-map equivalent to: a + b'c.
-    const dag::node* l_dag = generalize(
+    const node* l_dag = generalize(
         l_zeroes,
         l_ones
     );
@@ -195,7 +195,7 @@ void test_small_generalization_1(
 {
     constexpr bool ENABLE_DEBUG_LOGS = false;
     
-    std::set<node> l_nodes;
+    dag l_nodes;
 
     global_node_sink::bind(&l_nodes);
     
@@ -258,7 +258,7 @@ void test_small_generalization_2(
 {
     constexpr bool ENABLE_DEBUG_LOGS = false;
 
-    std::set<node> l_nodes;
+    dag l_nodes;
 
     global_node_sink::bind(&l_nodes);
     
@@ -322,7 +322,7 @@ void test_small_generalization_3(
 {
     constexpr bool ENABLE_DEBUG_LOGS = false;
 
-    std::set<node> l_nodes;
+    dag l_nodes;
 
     global_node_sink::bind(&l_nodes);
 
@@ -382,7 +382,7 @@ void test_generalize_exnor(
 {
     constexpr bool ENABLE_DEBUG_LOGS = false;
     
-    std::set<node> l_nodes;
+    dag l_nodes;
 
     global_node_sink::bind(&l_nodes);
 
@@ -431,7 +431,7 @@ void test_generalize_exor(
 {
     constexpr bool ENABLE_DEBUG_LOGS = false;
     
-    std::set<node> l_nodes;
+    dag l_nodes;
 
     global_node_sink::bind(&l_nodes);
 
