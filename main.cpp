@@ -14,6 +14,16 @@ using namespace factor;
 using namespace logic;
 using namespace karnaugh;
 
+bool model_str_eq(
+    const factor::node* a_model,
+    const std::string& a_str
+)
+{
+    std::stringstream l_ss;
+    l_ss << a_model;
+    return l_ss.str() == a_str;
+}
+
 ////////////////////////////////////////////
 //////////////// UNIT TESTS ////////////////
 ////////////////////////////////////////////
@@ -474,6 +484,40 @@ void test_generalize_exor(
     
 }
 
+void test_generalize_3_vars(
+
+)
+{
+    constexpr bool ENABLE_DEBUG_LOGS = false;
+    
+    std::set<input> l_zeroes =
+    {
+        { 0, 0, 0 },
+        { 0, 0, 1 },
+        { 1, 0, 0 },
+        { 1, 1, 0 },
+    };
+    std::set<input> l_ones =
+    {
+        { 1, 1, 1 },
+        { 1, 0, 1 }
+    };
+
+    factor::dag l_dag;
+
+    global_node_sink::bind(&l_dag);
+
+    const factor::node* l_model = generalize(
+        l_zeroes,
+        l_ones
+    );
+
+    LOG(l_model << std::endl);
+
+    assert(model_str_eq(l_model, "([0]'[1][2]+[0][2])"));
+    
+}
+
 void unit_test_main(
 
 )
@@ -489,6 +533,7 @@ void unit_test_main(
     TEST(test_small_generalization_3);
     TEST(test_generalize_exnor);
     TEST(test_generalize_exor);
+    TEST(test_generalize_3_vars);
     
 }
 
